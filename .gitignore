@@ -1,5 +1,6 @@
 # Claude Code
 .claude/
+.mcp.json
 
 # OS Files
 .DS_Store
