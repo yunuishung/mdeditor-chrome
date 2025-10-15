@@ -158,6 +158,40 @@ function applyDarkMode() {
   }
 }
 
+// Keyboard shortcuts
+document.addEventListener('keydown', (e) => {
+  // Ctrl/Cmd + S: Save (prevent browser save dialog)
+  if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+    e.preventDefault();
+    saveToStorage();
+    console.log('Saved to storage');
+  }
+
+  // Ctrl/Cmd + D: Download
+  if ((e.ctrlKey || e.metaKey) && e.key === 'd') {
+    e.preventDefault();
+    downloadBtn.click();
+  }
+
+  // Ctrl/Cmd + Shift + C: Copy markdown
+  if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'C') {
+    e.preventDefault();
+    copyBtn.click();
+  }
+
+  // Ctrl/Cmd + E: Toggle preview
+  if ((e.ctrlKey || e.metaKey) && e.key === 'e') {
+    e.preventDefault();
+    togglePreviewBtn.click();
+  }
+
+  // Ctrl/Cmd + Shift + D: Toggle dark mode
+  if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'D') {
+    e.preventDefault();
+    darkModeBtn.click();
+  }
+});
+
 // Auto-save indicator (optional)
 let saveTimeout;
 editor.addEventListener('input', () => {

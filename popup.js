@@ -36,6 +36,8 @@ const uploadFile = document.getElementById('uploadFile');
 const downloadBtn = document.getElementById('downloadBtn');
 const darkModeBtn = document.getElementById('darkModeBtn');
 const openFullBtn = document.getElementById('openFullBtn');
+const openSidePanelBtn = document.getElementById('openSidePanelBtn');
+const openWindowBtn = document.getElementById('openWindowBtn');
 const previewIcon = document.getElementById('previewIcon');
 const darkModeIcon = document.getElementById('darkModeIcon');
 const copyIcon = document.getElementById('copyIcon');
@@ -159,4 +161,58 @@ openFullBtn.addEventListener('click', () => {
   chrome.tabs.create({
     url: 'editor.html'
   });
+});
+
+// Open side panel
+openSidePanelBtn.addEventListener('click', async () => {
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  await chrome.sidePanel.open({ windowId: tab.windowId });
+  window.close(); // Close popup after opening side panel
+});
+
+// Open resizable window
+openWindowBtn.addEventListener('click', () => {
+  chrome.windows.create({
+    url: 'editor.html',
+    type: 'popup',
+    width: 1000,
+    height: 700,
+    left: 100,
+    top: 100
+  });
+  window.close(); // Close popup after opening window
+});
+
+// Keyboard shortcuts
+document.addEventListener('keydown', (e) => {
+  // Ctrl/Cmd + S: Save (prevent browser save dialog)
+  if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+    e.preventDefault();
+    saveToStorage();
+    console.log('Saved to storage');
+  }
+
+  // Ctrl/Cmd + D: Download
+  if ((e.ctrlKey || e.metaKey) && e.key === 'd') {
+    e.preventDefault();
+    downloadBtn.click();
+  }
+
+  // Ctrl/Cmd + Shift + C: Copy markdown
+  if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'C') {
+    e.preventDefault();
+    copyBtn.click();
+  }
+
+  // Ctrl/Cmd + E: Toggle preview
+  if ((e.ctrlKey || e.metaKey) && e.key === 'e') {
+    e.preventDefault();
+    togglePreviewBtn.click();
+  }
+
+  // Ctrl/Cmd + Shift + D: Toggle dark mode
+  if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'D') {
+    e.preventDefault();
+    darkModeBtn.click();
+  }
 });

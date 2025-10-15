@@ -102,6 +102,16 @@ body.dark .title {
   color: white;
 }
 
+.btn-teal {
+  background-color: #14b8a6;
+  color: white;
+}
+
+.btn-pink {
+  background-color: #ec4899;
+  color: white;
+}
+
 /* Editor Container */
 .editor-container {
   flex: 1;
