@@ -1,0 +1,22 @@
+# Claude Code
+.claude/
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Temporary files
+*.log
+*.tmp
+
+# Chrome extension packaging
+*.crx
+*.pem
+*.zip

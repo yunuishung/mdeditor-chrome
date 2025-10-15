@@ -1,0 +1,18 @@
+{
+  "manifest_version": 3,
+  "name": "무료 마크다운 편집기",
+  "version": "1.0.0",
+  "description": "실시간 미리보기, 다크모드, 파일 업로드/다운로드를 지원하는 무료 마크다운 편집기",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "마크다운 편집기"
+  },
+  "permissions": [
+    "storage"
+  ]
+}

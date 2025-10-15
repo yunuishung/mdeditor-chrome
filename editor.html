@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>마크다운 편집기 - 전체 화면</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    #app {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      background-color: #f9fafb;
+      transition: background-color 0.3s;
+    }
+
+    body.dark #app {
+      background-color: #111827;
+    }
+
+    /* Header */
+    .header {
+      background-color: white;
+      border-bottom: 1px solid #e5e7eb;
+      transition: all 0.3s;
+    }
+
+    body.dark .header {
+      background-color: #1f2937;
+      border-bottom-color: #374151;
+    }
+
+    .header-content {
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .title {
+      font-size: 24px;
+      font-weight: bold;
+      color: #111827;
+    }
+
+    body.dark .title {
+      color: white;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 12px;
+    }
+
+    .btn {
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn:hover {
+      opacity: 0.8;
+    }
+
+    .btn-blue {
+      background-color: #3b82f6;
+      color: white;
+    }
+
+    .btn-green {
+      background-color: #10b981;
+      color: white;
+    }
+
+    .btn-purple {
+      background-color: #8b5cf6;
+      color: white;
+    }
+
+    .btn-indigo {
+      background-color: #6366f1;
+      color: white;
+    }
+
+    .btn-gray {
+      background-color: #374151;
+      color: white;
+    }
+
+    /* Editor Container */
+    .editor-container {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      padding: 24px;
+      max-width: 1400px;
+      margin: 0 auto;
+      width: 100%;
+      overflow: hidden;
+    }
+
+    .editor-container.editor-only {
+      grid-template-columns: 1fr;
+    }
+
+    .editor-container.editor-only #previewPane {
+      display: none;
+    }
+
+    .pane {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .pane-header {
+      background-color: #e5e7eb;
+      padding: 12px 20px;
+      border-radius: 8px 8px 0 0;
+      font-size: 14px;
+      font-weight: 600;
+      color: #374151;
+    }
+
+    body.dark .pane-header {
+      background-color: #374151;
+      color: #d1d5db;
+    }
+
+    #editor {
+      flex: 1;
+      padding: 20px;
+      background-color: white;
+      color: #111827;
+      border: 1px solid #d1d5db;
+      border-top: none;
+      border-radius: 0 0 8px 8px;
+      font-family: 'Courier New', monospace;
+      font-size: 15px;
+      line-height: 1.6;
+      resize: none;
+      outline: none;
+    }
+
+    body.dark #editor {
+      background-color: #1f2937;
+      color: #f3f4f6;
+      border-color: #4b5563;
+    }
+
+    #editor:focus {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .preview-content {
+      flex: 1;
+      padding: 20px;
+      background-color: white;
+      color: #111827;
+      border: 1px solid #d1d5db;
+      border-top: none;
+      border-radius: 0 0 8px 8px;
+      overflow-y: auto;
+      line-height: 1.7;
+    }
+
+    body.dark .preview-content {
+      background-color: #1f2937;
+      color: #f3f4f6;
+      border-color: #4b5563;
+    }
+
+    /* Preview Content Styles */
+    .preview-content h1 {
+      font-size: 32px;
+      font-weight: bold;
+      margin-top: 32px;
+      margin-bottom: 16px;
+    }
+
+    .preview-content h2 {
+      font-size: 28px;
+      font-weight: bold;
+      margin-top: 28px;
+      margin-bottom: 14px;
+    }
+
+    .preview-content h3 {
+      font-size: 24px;
+      font-weight: bold;
+      margin-top: 20px;
+      margin-bottom: 10px;
+    }
+
+    .preview-content p {
+      margin-bottom: 16px;
+      font-size: 16px;
+    }
+
+    .preview-content pre {
+      background-color: #1f2937;
+      color: #f3f4f6;
+      padding: 20px;
+      border-radius: 8px;
+      overflow-x: auto;
+      margin: 20px 0;
+    }
+
+    .preview-content code {
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+    }
+
+    .preview-content strong {
+      font-weight: bold;
+    }
+
+    .preview-content em {
+      font-style: italic;
+    }
+
+    .preview-content del {
+      text-decoration: line-through;
+    }
+
+    .preview-content a {
+      color: #3b82f6;
+      text-decoration: none;
+    }
+
+    .preview-content a:hover {
+      text-decoration: underline;
+    }
+
+    .preview-content img {
+      max-width: 100%;
+      height: auto;
+      margin: 20px 0;
+      border-radius: 8px;
+    }
+
+    .preview-content blockquote {
+      border-left: 4px solid #d1d5db;
+      padding-left: 20px;
+      font-style: italic;
+      margin: 20px 0;
+      color: #6b7280;
+    }
+
+    body.dark .preview-content blockquote {
+      border-left-color: #4b5563;
+      color: #9ca3af;
+    }
+
+    .preview-content ul {
+      list-style-type: disc;
+      margin: 12px 0;
+      padding-left: 32px;
+    }
+
+    .preview-content li {
+      margin-left: 24px;
+      margin-bottom: 6px;
+    }
+
+    .preview-content hr {
+      margin: 28px 0;
+      border: none;
+      border-top: 1px solid #d1d5db;
+    }
+
+    body.dark .preview-content hr {
+      border-top-color: #4b5563;
+    }
+
+    /* Footer */
+    .footer {
+      background-color: white;
+      border-top: 1px solid #e5e7eb;
+      padding: 12px 24px;
+      text-align: center;
+      font-size: 14px;
+      color: #6b7280;
+    }
+
+    body.dark .footer {
+      background-color: #1f2937;
+      border-top-color: #374151;
+      color: #9ca3af;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 10px;
+      height: 10px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #f3f4f6;
+    }
+
+    body.dark ::-webkit-scrollbar-track {
+      background: #1f2937;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #9ca3af;
+      border-radius: 5px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #6b7280;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-content">
+        <h1 class="title">📝 무료 마크다운 편집기 - 전체 화면</h1>
+        <div class="toolbar">
+          <button id="togglePreview" class="btn btn-blue" title="미리보기 전환">
+            <svg id="previewIcon" width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+            </svg>
+          </button>
+          <button id="copyBtn" class="btn btn-green" title="복사">
+            <svg id="copyIcon" width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+            </svg>
+          </button>
+          <label class="btn btn-purple" title="업로드">
+            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+            </svg>
+            <input type="file" id="uploadFile" accept=".md,.txt" style="display: none;">
+          </label>
+          <button id="downloadBtn" class="btn btn-indigo" title="다운로드">
+            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+            </svg>
+          </button>
+          <button id="darkModeBtn" class="btn btn-gray" title="다크모드 전환">
+            <svg id="darkModeIcon" width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Editor Area -->
+    <div class="editor-container">
+      <div id="editorPane" class="pane">
+        <div class="pane-header">
+          <span>편집</span>
+        </div>
+        <textarea id="editor" placeholder="마크다운을 입력하세요..."></textarea>
+      </div>
+
+      <div id="previewPane" class="pane">
+        <div class="pane-header">
+          <span>미리보기</span>
+        </div>
+        <div id="preview" class="preview-content"></div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+      무료 마크다운 편집기 | 데이터는 로컬에만 저장됩니다 | Chrome 확장 프로그램
+    </footer>
+  </div>
+
+  <script src="markdown-parser.js"></script>
+  <script src="editor.js"></script>
+</body>
+</html>
