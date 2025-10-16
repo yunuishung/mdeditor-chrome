@@ -229,7 +229,7 @@ body.dark .toolbar-divider {
   background-color: #4b5563;
 }
 
-#editor {
+#editor, #editor2 {
   flex: 1;
   padding: 16px;
   background-color: white;
@@ -243,13 +243,13 @@ body.dark .toolbar-divider {
   outline: none;
 }
 
-body.dark #editor {
+body.dark #editor, body.dark #editor2 {
   background-color: #1f2937;
   color: #f3f4f6;
   border-color: #4b5563;
 }
 
-#editor:focus {
+#editor:focus, #editor2:focus {
   border-color: #3b82f6;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
