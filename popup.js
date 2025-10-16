@@ -42,6 +42,9 @@ const previewIcon = document.getElementById('previewIcon');
 const darkModeIcon = document.getElementById('darkModeIcon');
 const copyIcon = document.getElementById('copyIcon');
 
+// Display version
+document.getElementById('version').textContent = `v${chrome.runtime.getManifest().version}`;
+
 // Load saved data
 chrome.storage.local.get(['markdown', 'darkMode', 'showPreview'], (result) => {
   if (result.markdown !== undefined) {
@@ -274,6 +277,9 @@ openWindowBtn.addEventListener('click', () => {
   });
   window.close(); // Close popup after opening window
 });
+
+// Check for updates when popup opens
+initUpdateCheck();
 
 // Keyboard shortcuts
 document.addEventListener('keydown', (e) => {

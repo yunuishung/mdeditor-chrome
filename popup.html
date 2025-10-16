@@ -11,7 +11,7 @@
     <!-- Header -->
     <header class="header">
       <div class="header-content">
-        <h1 class="title">📝 무료 마크다운 편집기</h1>
+        <h1 class="title">📝 무료 마크다운 편집기 <span class="version" id="version"></span></h1>
         <div class="toolbar">
           <button id="togglePreview" class="btn btn-blue" title="미리보기 전환">
             <svg id="previewIcon" width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -141,9 +141,5 @@
   <script src="markdown-parser.js"></script>
   <script src="version-checker.js"></script>
   <script src="popup.js"></script>
-  <script>
-    // Check for updates when popup opens
-    initUpdateCheck();
-  </script>
 </body>
 </html>

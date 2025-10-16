@@ -52,6 +52,17 @@ body.dark .title {
   color: white;
 }
 
+.version {
+  font-size: 12px;
+  font-weight: normal;
+  color: #6b7280;
+  margin-left: 8px;
+}
+
+body.dark .version {
+  color: #9ca3af;
+}
+
 .toolbar {
   display: flex;
   gap: 8px;

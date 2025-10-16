@@ -60,6 +60,17 @@
       color: white;
     }
 
+    .version {
+      font-size: 14px;
+      font-weight: normal;
+      color: #6b7280;
+      margin-left: 10px;
+    }
+
+    body.dark .version {
+      color: #9ca3af;
+    }
+
     .toolbar {
       display: flex;
       gap: 12px;
@@ -543,7 +554,7 @@
     <!-- Header -->
     <header class="header">
       <div class="header-content">
-        <h1 class="title">📝 무료 마크다운 편집기 - 전체 화면</h1>
+        <h1 class="title">📝 무료 마크다운 편집기 - 전체 화면 <span class="version" id="version"></span></h1>
         <div class="toolbar">
           <button id="togglePreview" class="btn btn-blue" title="미리보기 전환">
             <svg id="previewIcon" width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -658,9 +669,5 @@
   <script src="markdown-parser.js"></script>
   <script src="version-checker.js"></script>
   <script src="editor.js"></script>
-  <script>
-    // Check for updates when editor opens
-    initUpdateCheck();
-  </script>
 </body>
 </html>

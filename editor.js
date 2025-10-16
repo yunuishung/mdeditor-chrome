@@ -44,6 +44,9 @@ const previewIcon = document.getElementById('previewIcon');
 const darkModeIcon = document.getElementById('darkModeIcon');
 const copyIcon = document.getElementById('copyIcon');
 
+// Display version
+document.getElementById('version').textContent = `v${chrome.runtime.getManifest().version}`;
+
 // Load saved data
 chrome.storage.local.get(['markdown', 'darkMode', 'showPreview'], (result) => {
   if (result.markdown !== undefined) {
@@ -301,6 +304,9 @@ document.addEventListener('keydown', (e) => {
     darkModeBtn.click();
   }
 });
+
+// Check for updates when editor opens
+initUpdateCheck();
 
 // Auto-save indicator (optional)
 let saveTimeout;
