@@ -73,23 +73,23 @@ function showUpdateNotification(updateInfo) {
 
   document.body.appendChild(notification);
 
-  // Auto-hide after 10 seconds if user doesn't interact
+  // Auto-hide after 30 seconds if user doesn't interact
   setTimeout(() => {
     if (document.getElementById('update-notification')) {
       notification.style.opacity = '0';
       setTimeout(() => notification.remove(), 300);
     }
-  }, 10000);
+  }, 30000);
 }
 
 // Initialize update check
-async function initUpdateCheck() {
+async function initUpdateCheck(force = false) {
   // Check if we should skip (checked recently)
   const lastCheck = localStorage.getItem('lastUpdateCheck');
   const now = Date.now();
-  const oneDay = 24 * 60 * 60 * 1000;
+  const checkInterval = 6 * 60 * 60 * 1000; // 6 hours instead of 24 hours
 
-  if (lastCheck && (now - parseInt(lastCheck)) < oneDay) {
+  if (!force && lastCheck && (now - parseInt(lastCheck)) < checkInterval) {
     console.log('Update check skipped (checked recently)');
     return;
   }
@@ -105,3 +105,10 @@ async function initUpdateCheck() {
     console.log('No updates available');
   }
 }
+
+// Manual update check function (can be called from console)
+window.checkForUpdatesNow = function() {
+  console.log('Forcing update check...');
+  localStorage.removeItem('lastUpdateCheck');
+  initUpdateCheck(true);
+};
