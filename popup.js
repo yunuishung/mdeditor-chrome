@@ -163,6 +163,98 @@ openFullBtn.addEventListener('click', () => {
   });
 });
 
+// Markdown formatting functions
+function wrapSelection(before, after = before) {
+  const start = editor.selectionStart;
+  const end = editor.selectionEnd;
+  const selectedText = editor.value.substring(start, end);
+  const replacement = before + selectedText + after;
+
+  editor.setRangeText(replacement, start, end, 'select');
+  editor.focus();
+
+  markdown = editor.value;
+  updatePreview();
+  saveToStorage();
+}
+
+function replaceSelection(text) {
+  const start = editor.selectionStart;
+  const end = editor.selectionEnd;
+
+  editor.setRangeText(text, start, end, 'end');
+  editor.focus();
+
+  markdown = editor.value;
+  updatePreview();
+  saveToStorage();
+}
+
+function insertAtLineStart(prefix) {
+  const start = editor.selectionStart;
+  const value = editor.value;
+  const lineStart = value.lastIndexOf('\n', start - 1) + 1;
+  const line = value.substring(lineStart, value.indexOf('\n', start) !== -1 ? value.indexOf('\n', start) : value.length);
+
+  if (line.startsWith(prefix)) {
+    // Remove prefix if already present
+    editor.setRangeText('', lineStart, lineStart + prefix.length, 'start');
+  } else {
+    // Add prefix
+    editor.setRangeText(prefix, lineStart, lineStart, 'end');
+  }
+
+  editor.focus();
+  markdown = editor.value;
+  updatePreview();
+  saveToStorage();
+}
+
+// Format button listeners
+document.getElementById('formatBold').addEventListener('click', () => wrapSelection('**'));
+document.getElementById('formatItalic').addEventListener('click', () => wrapSelection('*'));
+document.getElementById('formatStrike').addEventListener('click', () => wrapSelection('~~'));
+document.getElementById('formatH1').addEventListener('click', () => insertAtLineStart('# '));
+document.getElementById('formatH2').addEventListener('click', () => insertAtLineStart('## '));
+document.getElementById('formatH3').addEventListener('click', () => insertAtLineStart('### '));
+document.getElementById('formatLink').addEventListener('click', () => {
+  const url = prompt('URL을 입력하세요:', 'https://');
+  if (url) {
+    const start = editor.selectionStart;
+    const end = editor.selectionEnd;
+    const selectedText = editor.value.substring(start, end) || '링크 텍스트';
+    wrapSelection('[', `](${url})`);
+  }
+});
+document.getElementById('formatImage').addEventListener('click', () => {
+  const url = prompt('이미지 URL을 입력하세요:', 'https://');
+  if (url) {
+    const start = editor.selectionStart;
+    const end = editor.selectionEnd;
+    const selectedText = editor.value.substring(start, end) || '이미지 설명';
+    wrapSelection('![', `](${url})`);
+  }
+});
+document.getElementById('formatCode').addEventListener('click', () => {
+  const start = editor.selectionStart;
+  const end = editor.selectionEnd;
+  const selectedText = editor.value.substring(start, end);
+
+  if (selectedText.includes('\n')) {
+    // Multi-line: use code block
+    wrapSelection('```\n', '\n```');
+  } else {
+    // Single line: use inline code
+    wrapSelection('`');
+  }
+});
+document.getElementById('formatList').addEventListener('click', () => insertAtLineStart('- '));
+document.getElementById('formatQuote').addEventListener('click', () => insertAtLineStart('> '));
+document.getElementById('formatHR').addEventListener('click', () => {
+  const start = editor.selectionStart;
+  replaceSelection('\n\n---\n\n');
+});
+
 // Open side panel
 openSidePanelBtn.addEventListener('click', async () => {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -190,6 +282,24 @@ document.addEventListener('keydown', (e) => {
     e.preventDefault();
     saveToStorage();
     console.log('Saved to storage');
+  }
+
+  // Ctrl/Cmd + B: Bold
+  if ((e.ctrlKey || e.metaKey) && e.key === 'b') {
+    e.preventDefault();
+    document.getElementById('formatBold').click();
+  }
+
+  // Ctrl/Cmd + I: Italic
+  if ((e.ctrlKey || e.metaKey) && e.key === 'i') {
+    e.preventDefault();
+    document.getElementById('formatItalic').click();
+  }
+
+  // Ctrl/Cmd + K: Link
+  if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+    e.preventDefault();
+    document.getElementById('formatLink').click();
   }
 
   // Ctrl/Cmd + D: Download
