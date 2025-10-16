@@ -16,11 +16,17 @@ async function checkForUpdates() {
     const latestVersion = latestRelease.tag_name.replace('v', ''); // Remove 'v' prefix if present
     const currentVersion = chrome.runtime.getManifest().version;
 
+    // Find the zip asset
+    const zipAsset = latestRelease.assets.find(asset =>
+      asset.name.endsWith('.zip') && asset.name.includes('source')
+    );
+
     return {
       hasUpdate: compareVersions(latestVersion, currentVersion) > 0,
       latestVersion: latestVersion,
       currentVersion: currentVersion,
       downloadUrl: latestRelease.html_url,
+      zipDownloadUrl: zipAsset ? zipAsset.browser_download_url : null,
       releaseNotes: latestRelease.body || '업데이트 내역이 없습니다.'
     };
   } catch (error) {
@@ -50,6 +56,26 @@ function showUpdateNotification(updateInfo) {
   const notification = document.createElement('div');
   notification.id = 'update-notification';
   notification.className = 'update-notification';
+
+  // Build button HTML based on available download options
+  let buttonsHtml = '';
+  if (updateInfo.zipDownloadUrl) {
+    buttonsHtml = `
+      <a href="${updateInfo.zipDownloadUrl}" class="update-btn update-btn-primary" download>
+        ZIP 다운로드
+      </a>
+      <a href="${updateInfo.downloadUrl}" target="_blank" class="update-btn update-btn-secondary">
+        릴리스 페이지
+      </a>
+    `;
+  } else {
+    buttonsHtml = `
+      <a href="${updateInfo.downloadUrl}" target="_blank" class="update-btn update-btn-primary">
+        GitHub에서 다운로드
+      </a>
+    `;
+  }
+
   notification.innerHTML = `
     <div class="update-content">
       <div class="update-header">
@@ -61,10 +87,8 @@ function showUpdateNotification(updateInfo) {
         현재 버전: ${updateInfo.currentVersion} → 최신 버전: ${updateInfo.latestVersion}
       </p>
       <div class="update-actions">
-        <a href="${updateInfo.downloadUrl}" target="_blank" class="update-btn update-btn-primary">
-          GitHub에서 다운로드
-        </a>
-        <button class="update-btn update-btn-secondary" onclick="this.parentElement.parentElement.parentElement.remove()">
+        ${buttonsHtml}
+        <button class="update-btn update-btn-tertiary" onclick="this.parentElement.parentElement.parentElement.remove()">
           나중에
         </button>
       </div>
