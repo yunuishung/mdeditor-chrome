@@ -81,14 +81,14 @@ function showUpdateNotification(updateInfo) {
       <div class="update-header">
         <span class="update-icon">🔔</span>
         <strong>새 버전 사용 가능!</strong>
-        <button class="update-close" onclick="this.parentElement.parentElement.parentElement.remove()">×</button>
+        <button class="update-close">×</button>
       </div>
       <p class="update-info">
         현재 버전: ${updateInfo.currentVersion} → 최신 버전: ${updateInfo.latestVersion}
       </p>
       <div class="update-actions">
         ${buttonsHtml}
-        <button class="update-btn update-btn-tertiary" onclick="this.parentElement.parentElement.parentElement.remove()">
+        <button class="update-btn update-btn-tertiary update-later">
           나중에
         </button>
       </div>
@@ -96,6 +96,13 @@ function showUpdateNotification(updateInfo) {
   `;
 
   document.body.appendChild(notification);
+
+  // Add event listeners for close buttons
+  const closeBtn = notification.querySelector('.update-close');
+  const laterBtn = notification.querySelector('.update-later');
+
+  closeBtn.addEventListener('click', () => notification.remove());
+  laterBtn.addEventListener('click', () => notification.remove());
 
   // Auto-hide after 30 seconds if user doesn't interact
   setTimeout(() => {
