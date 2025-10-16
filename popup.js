@@ -1,12 +1,34 @@
 // State
-let editor1Content = '';
-let editor2Content = '';
-let showEditor2 = true;
+let markdown = `# 마크다운 편집기에 오신 것을 환영합니다!
+
+여기에 마크다운을 작성하세요...
+
+## 기능
+
+- 실시간 미리보기
+- 파일 업로드/다운로드
+- 다크모드
+- 깔끔한 UI
+
+\`\`\`javascript
+const hello = "Hello World!";
+console.log(hello);
+\`\`\`
+
+**굵게** *기울임* ~~취소선~~
+
+> 인용문입니다
+
+- 목록 1
+- 목록 2
+- 목록 3`;
+
+let showPreview = true;
 let darkMode = false;
 
 // Elements
-const editor1 = document.getElementById('editor');
-const editor2 = document.getElementById('editor2');
+const editor = document.getElementById('editor');
+const preview = document.getElementById('preview');
 const editorContainer = document.querySelector('.editor-container');
 const togglePreviewBtn = document.getElementById('togglePreview');
 const copyBtn = document.getElementById('copyBtn');
@@ -24,57 +46,53 @@ const copyIcon = document.getElementById('copyIcon');
 document.getElementById('version').textContent = `v${chrome.runtime.getManifest().version}`;
 
 // Load saved data
-chrome.storage.local.get(['editor1Content', 'editor2Content', 'darkMode', 'showEditor2'], (result) => {
-  if (result.editor1Content !== undefined) {
-    editor1Content = result.editor1Content;
-  }
-  if (result.editor2Content !== undefined) {
-    editor2Content = result.editor2Content;
+chrome.storage.local.get(['markdown', 'darkMode', 'showPreview'], (result) => {
+  if (result.markdown !== undefined) {
+    markdown = result.markdown;
   }
   if (result.darkMode !== undefined) {
     darkMode = result.darkMode;
   }
-  if (result.showEditor2 !== undefined) {
-    showEditor2 = result.showEditor2;
+  if (result.showPreview !== undefined) {
+    showPreview = result.showPreview;
   }
 
-  editor1.value = editor1Content;
-  editor2.value = editor2Content;
+  editor.value = markdown;
+  updatePreview();
   applyDarkMode();
-  applyEditor2Toggle();
+  applyPreviewToggle();
 });
 
-// Editor 1 change handler
-editor1.addEventListener('input', () => {
-  editor1Content = editor1.value;
+// Editor change handler
+editor.addEventListener('input', () => {
+  markdown = editor.value;
+  updatePreview();
   saveToStorage();
 });
 
-// Editor 2 change handler
-editor2.addEventListener('input', () => {
-  editor2Content = editor2.value;
-  saveToStorage();
-});
+// Update preview
+function updatePreview() {
+  preview.innerHTML = convertMarkdownToHtml(markdown);
+}
 
 // Save to storage
 function saveToStorage() {
   chrome.storage.local.set({
-    editor1Content: editor1Content,
-    editor2Content: editor2Content,
+    markdown: markdown,
     darkMode: darkMode,
-    showEditor2: showEditor2
+    showPreview: showPreview
   });
 }
 
-// Toggle editor 2 visibility
+// Toggle preview
 togglePreviewBtn.addEventListener('click', () => {
-  showEditor2 = !showEditor2;
-  applyEditor2Toggle();
+  showPreview = !showPreview;
+  applyPreviewToggle();
   saveToStorage();
 });
 
-function applyEditor2Toggle() {
-  if (showEditor2) {
+function applyPreviewToggle() {
+  if (showPreview) {
     editorContainer.classList.remove('editor-only');
     previewIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>';
   } else {
@@ -83,10 +101,10 @@ function applyEditor2Toggle() {
   }
 }
 
-// Copy to clipboard (editor 1 content)
+// Copy to clipboard
 copyBtn.addEventListener('click', async () => {
   try {
-    await navigator.clipboard.writeText(editor1Content);
+    await navigator.clipboard.writeText(markdown);
     copyIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>';
     setTimeout(() => {
       copyIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>';
@@ -96,27 +114,28 @@ copyBtn.addEventListener('click', async () => {
   }
 });
 
-// Upload file (loads into editor 1)
+// Upload file
 uploadFile.addEventListener('change', (e) => {
   const file = e.target.files[0];
   if (file) {
     const reader = new FileReader();
     reader.onload = (e) => {
-      editor1Content = e.target.result;
-      editor1.value = editor1Content;
+      markdown = e.target.result;
+      editor.value = markdown;
+      updatePreview();
       saveToStorage();
     };
     reader.readAsText(file);
   }
 });
 
-// Download file (saves editor 1 content)
+// Download file
 downloadBtn.addEventListener('click', () => {
-  const blob = new Blob([editor1Content], { type: 'text/plain' });
+  const blob = new Blob([markdown], { type: 'text/markdown' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = 'document.txt';
+  a.download = 'document.md';
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -147,6 +166,98 @@ openFullBtn.addEventListener('click', () => {
   });
 });
 
+// Markdown formatting functions
+function wrapSelection(before, after = before) {
+  const start = editor.selectionStart;
+  const end = editor.selectionEnd;
+  const selectedText = editor.value.substring(start, end);
+  const replacement = before + selectedText + after;
+
+  editor.setRangeText(replacement, start, end, 'select');
+  editor.focus();
+
+  markdown = editor.value;
+  updatePreview();
+  saveToStorage();
+}
+
+function replaceSelection(text) {
+  const start = editor.selectionStart;
+  const end = editor.selectionEnd;
+
+  editor.setRangeText(text, start, end, 'end');
+  editor.focus();
+
+  markdown = editor.value;
+  updatePreview();
+  saveToStorage();
+}
+
+function insertAtLineStart(prefix) {
+  const start = editor.selectionStart;
+  const value = editor.value;
+  const lineStart = value.lastIndexOf('\n', start - 1) + 1;
+  const line = value.substring(lineStart, value.indexOf('\n', start) !== -1 ? value.indexOf('\n', start) : value.length);
+
+  if (line.startsWith(prefix)) {
+    // Remove prefix if already present
+    editor.setRangeText('', lineStart, lineStart + prefix.length, 'start');
+  } else {
+    // Add prefix
+    editor.setRangeText(prefix, lineStart, lineStart, 'end');
+  }
+
+  editor.focus();
+  markdown = editor.value;
+  updatePreview();
+  saveToStorage();
+}
+
+// Format button listeners
+document.getElementById('formatBold').addEventListener('click', () => wrapSelection('**'));
+document.getElementById('formatItalic').addEventListener('click', () => wrapSelection('*'));
+document.getElementById('formatStrike').addEventListener('click', () => wrapSelection('~~'));
+document.getElementById('formatH1').addEventListener('click', () => insertAtLineStart('# '));
+document.getElementById('formatH2').addEventListener('click', () => insertAtLineStart('## '));
+document.getElementById('formatH3').addEventListener('click', () => insertAtLineStart('### '));
+document.getElementById('formatLink').addEventListener('click', () => {
+  const url = prompt('URL을 입력하세요:', 'https://');
+  if (url) {
+    const start = editor.selectionStart;
+    const end = editor.selectionEnd;
+    const selectedText = editor.value.substring(start, end) || '링크 텍스트';
+    wrapSelection('[', `](${url})`);
+  }
+});
+document.getElementById('formatImage').addEventListener('click', () => {
+  const url = prompt('이미지 URL을 입력하세요:', 'https://');
+  if (url) {
+    const start = editor.selectionStart;
+    const end = editor.selectionEnd;
+    const selectedText = editor.value.substring(start, end) || '이미지 설명';
+    wrapSelection('![', `](${url})`);
+  }
+});
+document.getElementById('formatCode').addEventListener('click', () => {
+  const start = editor.selectionStart;
+  const end = editor.selectionEnd;
+  const selectedText = editor.value.substring(start, end);
+
+  if (selectedText.includes('\n')) {
+    // Multi-line: use code block
+    wrapSelection('```\n', '\n```');
+  } else {
+    // Single line: use inline code
+    wrapSelection('`');
+  }
+});
+document.getElementById('formatList').addEventListener('click', () => insertAtLineStart('- '));
+document.getElementById('formatQuote').addEventListener('click', () => insertAtLineStart('> '));
+document.getElementById('formatHR').addEventListener('click', () => {
+  const start = editor.selectionStart;
+  replaceSelection('\n\n---\n\n');
+});
+
 // Open side panel
 openSidePanelBtn.addEventListener('click', async () => {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -172,11 +283,29 @@ initUpdateCheck();
 
 // Keyboard shortcuts
 document.addEventListener('keydown', (e) => {
-  // Ctrl/Cmd + S: Save
+  // Ctrl/Cmd + S: Save (prevent browser save dialog)
   if ((e.ctrlKey || e.metaKey) && e.key === 's') {
     e.preventDefault();
     saveToStorage();
     console.log('Saved to storage');
+  }
+
+  // Ctrl/Cmd + B: Bold
+  if ((e.ctrlKey || e.metaKey) && e.key === 'b') {
+    e.preventDefault();
+    document.getElementById('formatBold').click();
+  }
+
+  // Ctrl/Cmd + I: Italic
+  if ((e.ctrlKey || e.metaKey) && e.key === 'i') {
+    e.preventDefault();
+    document.getElementById('formatItalic').click();
+  }
+
+  // Ctrl/Cmd + K: Link
+  if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+    e.preventDefault();
+    document.getElementById('formatLink').click();
   }
 
   // Ctrl/Cmd + D: Download
@@ -185,13 +314,13 @@ document.addEventListener('keydown', (e) => {
     downloadBtn.click();
   }
 
-  // Ctrl/Cmd + Shift + C: Copy
+  // Ctrl/Cmd + Shift + C: Copy markdown
   if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'C') {
     e.preventDefault();
     copyBtn.click();
   }
 
-  // Ctrl/Cmd + E: Toggle editor 2
+  // Ctrl/Cmd + E: Toggle preview
   if ((e.ctrlKey || e.metaKey) && e.key === 'e') {
     e.preventDefault();
     togglePreviewBtn.click();
@@ -202,20 +331,4 @@ document.addEventListener('keydown', (e) => {
     e.preventDefault();
     darkModeBtn.click();
   }
-});
-
-// Auto-save indicator
-let saveTimeout;
-editor1.addEventListener('input', () => {
-  clearTimeout(saveTimeout);
-  saveTimeout = setTimeout(() => {
-    console.log('Editor 1 saved');
-  }, 1000);
-});
-
-editor2.addEventListener('input', () => {
-  clearTimeout(saveTimeout);
-  saveTimeout = setTimeout(() => {
-    console.log('Editor 2 saved');
-  }, 1000);
 });
