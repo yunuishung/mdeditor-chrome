@@ -65,14 +65,22 @@ chrome.storage.local.get(['markdown', 'darkMode', 'showPreview'], (result) => {
   applyPreviewToggle();
 });
 
-// Sync scroll between editor and preview
+// Track previous cursor line for vertical position change detection
+let previousCursorLine = 0;
+
+// Sync scroll between editor and preview (only when vertical position changes)
 function syncScroll() {
   if (!showPreview) return;
 
   const cursorPosition = editor.selectionStart;
   const textBeforeCursor = editor.value.substring(0, cursorPosition);
-  const totalLines = editor.value.split('\n').length;
   const linesBeforeCursor = textBeforeCursor.split('\n').length;
+
+  // Only sync if cursor line changed (vertical movement)
+  if (linesBeforeCursor === previousCursorLine) return;
+  previousCursorLine = linesBeforeCursor;
+
+  const totalLines = editor.value.split('\n').length;
 
   // Calculate scroll percentage based on cursor line position
   const scrollPercentage = totalLines > 1 ? (linesBeforeCursor - 1) / (totalLines - 1) : 0;
@@ -93,7 +101,6 @@ editor.addEventListener('input', () => {
 // Sync scroll on cursor position change
 editor.addEventListener('click', syncScroll);
 editor.addEventListener('keyup', syncScroll);
-editor.addEventListener('selectionchange', syncScroll);
 
 // Update preview
 function updatePreview() {
