@@ -350,6 +350,159 @@ document.addEventListener('keydown', (e) => {
 // Check for updates when editor opens
 initUpdateCheck();
 
+// Export to PDF
+document.getElementById('exportPDF').addEventListener('click', async () => {
+  try {
+    // Create a new window with the preview content for printing
+    const printWindow = window.open('', '_blank', 'width=800,height=600');
+
+    if (!printWindow) {
+      alert('팝업이 차단되었습니다. 팝업 차단을 해제하고 다시 시도해주세요.');
+      return;
+    }
+
+    const previewHTML = preview.innerHTML;
+    const isDark = document.body.classList.contains('dark');
+
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <title>마크다운 문서</title>
+        <style>
+          * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+          }
+
+          body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            padding: 40px;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.7;
+            color: #111827;
+          }
+
+          h1 {
+            font-size: 32px;
+            font-weight: bold;
+            margin-top: 32px;
+            margin-bottom: 16px;
+          }
+
+          h2 {
+            font-size: 28px;
+            font-weight: bold;
+            margin-top: 28px;
+            margin-bottom: 14px;
+          }
+
+          h3 {
+            font-size: 24px;
+            font-weight: bold;
+            margin-top: 20px;
+            margin-bottom: 10px;
+          }
+
+          p {
+            margin-bottom: 16px;
+            font-size: 16px;
+          }
+
+          pre {
+            background-color: #f3f4f6;
+            color: #111827;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 20px 0;
+            border: 1px solid #d1d5db;
+          }
+
+          code {
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+          }
+
+          strong {
+            font-weight: bold;
+          }
+
+          em {
+            font-style: italic;
+          }
+
+          del {
+            text-decoration: line-through;
+          }
+
+          a {
+            color: #3b82f6;
+            text-decoration: none;
+          }
+
+          img {
+            max-width: 100%;
+            height: auto;
+            margin: 20px 0;
+          }
+
+          blockquote {
+            border-left: 4px solid #d1d5db;
+            padding-left: 20px;
+            font-style: italic;
+            margin: 20px 0;
+            color: #6b7280;
+          }
+
+          ul {
+            list-style-type: disc;
+            margin: 12px 0;
+            padding-left: 32px;
+          }
+
+          li {
+            margin-left: 24px;
+            margin-bottom: 6px;
+          }
+
+          hr {
+            margin: 28px 0;
+            border: none;
+            border-top: 1px solid #d1d5db;
+          }
+
+          @media print {
+            body {
+              padding: 20px;
+            }
+          }
+        </style>
+      </head>
+      <body>
+        ${previewHTML}
+      </body>
+      </html>
+    `);
+
+    printWindow.document.close();
+
+    // Wait for content to load, then trigger print dialog
+    printWindow.onload = () => {
+      setTimeout(() => {
+        printWindow.print();
+      }, 250);
+    };
+
+  } catch (err) {
+    console.error('PDF export failed:', err);
+    alert('PDF 내보내기에 실패했습니다.');
+  }
+});
+
 // Auto-save indicator (optional)
 let saveTimeout;
 editor.addEventListener('input', () => {
