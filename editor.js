@@ -102,6 +102,18 @@ editor.addEventListener('input', () => {
 editor.addEventListener('click', syncScroll);
 editor.addEventListener('keyup', syncScroll);
 
+// Sync preview scroll when editor is scrolled
+editor.addEventListener('scroll', () => {
+  if (!showPreview) return;
+
+  const scrollPercentage = editor.scrollHeight > editor.clientHeight
+    ? editor.scrollTop / (editor.scrollHeight - editor.clientHeight)
+    : 0;
+
+  const maxScroll = preview.scrollHeight - preview.clientHeight;
+  preview.scrollTop = maxScroll * scrollPercentage;
+});
+
 // Update preview
 function updatePreview() {
   preview.innerHTML = convertMarkdownToHtml(markdown);
